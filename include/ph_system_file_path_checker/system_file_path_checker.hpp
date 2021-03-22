@@ -39,6 +39,7 @@ struct Path_Info
 {
     inline static constexpr bool path_must_exist = is_same_v <tag_error_path, tag::constraints::path::must_exist>;
     inline static constexpr bool path_must_not_exist = is_same_v <tag_error_path, tag::constraints::path::must_not_exist>;
+    inline static constexpr bool path_can_exist = is_same_v <tag_error_path, tag::constraints::path::can_exist>;
     
     inline static constexpr bool must_be_file = is_same_v <tag_error_file_type, tag::constraints::file_type::must_be_file>;
     inline static constexpr bool must_be_folder = is_same_v <tag_error_file_type, tag::constraints::file_type::must_be_folder>;
@@ -106,6 +107,69 @@ struct Path_Info
         
 //        using success_handler = SuccessHandler <class>
     }
+    
+    template <class... T, class... U, class... V>
+    static auto process (filesystem::path const& path, type_list <T...> sucessHandlerMixins = type_list <> {}, type_list <U...> pathErrorHandlerMixins = type_list <> {}, type_list <V...> fileTypeErrorHandlerMixins = type_list <> {}) -> decltype (auto)
+    {
+        
+        using path_error_handler = PathErrorHandler <tag_error_path, U...>;
+        using file_type_error_handler = FileTypeErrorHandler <tag_error_file_type, V...>;
+    
+        if constexpr (path_must_exist)
+        {
+            if (not PATH_EXISTS)
+            {
+//                type_list <T...>::
+                path_error_handler {path};
+            }
+            
+        } else if constexpr (path_must_not_exist)
+        {
+            if (PATH_EXISTS)
+            {
+                path_error_handler {path};
+            }
+        } else if constexpr (path_can_exist)
+        {
+            
+        }
+       
+        if constexpr (must_be_file)
+        {
+            if (not IS_FILE)
+            {
+                file_type_error_handler {path};
+            }
+            
+            SuccessHandler<tag::file_type::file, T...> {path};
+            
+        } else if constexpr (must_be_folder)
+        {
+            if (not IS_DIRECTORY)
+            {
+                file_type_error_handler {path};
+            }
+            
+            SuccessHandler<tag::file_type::folder, T...> {path};
+            
+        } else if constexpr (can_be_any)
+        {
+            if (IS_FILE)
+            {
+                return (filesystem::path) SuccessHandler<tag::file_type::file, T...> {path};
+                
+            } else if (IS_DIRECTORY)
+            {
+                return (filesystem::path) SuccessHandler<tag::file_type::folder, T...> {path};
+                
+            } else
+            {
+                file_type_error_handler {path};
+            }
+        }
+        
+//        using success_handler = SuccessHandler <class>
+    }
 };
 
 
@@ -124,6 +188,14 @@ struct system_file_path_checker
         
         Path_Info <SuccessHandler, tag_error_path, PathErrorHandler, tag_error_file_type, FileTypeErrorHandler> {path};
     }
+    
+    template <class... T, class... U, class... V>
+    static auto process (filesystem::path const& path, type_list <T...> sucessHandlerMixins = type_list <> {}, type_list <U...> pathErrorHandlerMixins = type_list <> {}, type_list <V...> fileTypeErrorHandlerMixins = type_list <> {}) -> decltype (auto)
+    {
+        
+        return Path_Info <SuccessHandler, tag_error_path, PathErrorHandler, tag_error_file_type, FileTypeErrorHandler>::process (path);
+    }
+    
     
 };
 

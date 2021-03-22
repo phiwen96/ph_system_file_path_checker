@@ -22,6 +22,7 @@ namespace path
         {
             struct must_exist;
             struct must_not_exist;
+        struct can_exist;
         };
         
 namespace file_type

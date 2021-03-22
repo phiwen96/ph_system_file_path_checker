@@ -15,6 +15,15 @@ struct handle_path_error <tag::constraints::path::must_exist>
     }
 };
 
+template <>
+struct handle_path_error <tag::constraints::path::can_exist>
+{
+    handle_path_error (filesystem::path const& path)
+    {
+        throw runtime_error ("given path does not exist on system");
+    }
+};
+
 
 template <class Tag>
 struct handle_file_type_error
