@@ -1,10 +1,10 @@
 #include "headers.hpp"
 
 template <class>
-struct InputPathErrorHandler;
+struct handle_input_path_error;
 
 template <>
-struct InputPathErrorHandler <tag::error::path::must_exist>
+struct handle_input_path_error <tag::error::path::must_exist>
 {
     static void error (filesystem::path const& path)
     {
@@ -27,7 +27,7 @@ struct OutputPathErrorHandler <tag::error::path::must_not_exist>
 
 
 template <class>
-struct InputFileTypeErrorHandler
+struct handle_input_file_type_error
 {
     static void error (filesystem::path const& path)
     {
@@ -52,14 +52,14 @@ struct OutputFileTypeErrorHandler
 
 
 template <class...>
-struct InputPathHandler;
+struct handle_input_path;
 
 template <class... Mixins>
-struct InputPathHandler <tag::file_type::file, Mixins...> : Mixins...
+struct handle_input_path <tag::file_type::file, Mixins...> : Mixins...
 {
     string text;
     
-    InputPathHandler (filesystem::path const& path) : text (readFileIntoString(path)), Mixins {path}...
+    handle_input_path (filesystem::path const& path) : text (readFileIntoString(path)), Mixins {path}...
     {
         cout << "FILE" << endl;
         cout << text << endl;
@@ -71,23 +71,28 @@ struct InputPathHandler <tag::file_type::file, Mixins...> : Mixins...
 
 
 template <class... Mixins>
-struct InputPathHandler <tag::file_type::folder, Mixins...> : Mixins...
+struct handle_input_path <tag::file_type::folder, Mixins...> : Mixins...
 {
     
     
-    InputPathHandler (filesystem::path const& path) : Mixins {path}...
+    handle_input_path (filesystem::path const& path) : Mixins {path}...
     {
         cout << "FOLDER" << endl;
     }
 };
 
 
+string my_file_name (string name = __builtin_FILE ())
+{
+    return name;
+};
+
 
 
 int main( int argc, char* argv[] ) {
     
-    using input_reader = system_file_path_checker <InputPathHandler, tag::error::path::must_exist, InputPathErrorHandler, tag::error::file_type::can_be_any, InputFileTypeErrorHandler>;
-    input_reader reader (argv[0], type_list <int, char> {}, type_list <string, int> {});
+    using input_reader = system_file_path_checker <handle_input_path, tag::error::path::must_exist, handle_input_path_error, tag::error::file_type::can_be_any, handle_input_file_type_error>;
+    input_reader reader (my_file_name (), type_list <int, char> {}, type_list <string, int> {});
 
     int result = Catch::Session().run( argc, argv );
 
