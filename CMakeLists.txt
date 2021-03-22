@@ -12,7 +12,7 @@ add_subdirectory (cmake/phake)
 if (NOT TARGET const_str)
 	add_subdirectory (dependencies/const_str)
 endif ()
-if (NOT TARGET const_str)
+if (NOT TARGET ph_type_list)
 	add_subdirectory (dependencies/ph_type_list)
 endif ()
 
