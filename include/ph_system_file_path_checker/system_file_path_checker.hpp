@@ -1,19 +1,11 @@
-#include "../src/tags.hpp"
 #pragma once
+#include "../src/tags.hpp"
+#include <ph_system_file_path_checker/handles.hpp>
 //#include "../src/handles.hpp"
 #include <ph_type_list/type_list.hpp>
 using namespace std;
 
-string readFileIntoString(filesystem::path const& path) {
-    ifstream input_file (path);
-    
-      if (!input_file.is_open()) {
-            cerr << "Could not open the file - '"
-            << path << "'" << endl;
-            exit(EXIT_FAILURE);
-      }
-      return string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
-}
+
 
 
 #define PATH_EXISTS filesystem::exists (path)
@@ -22,87 +14,6 @@ string readFileIntoString(filesystem::path const& path) {
 
 
 
-
-template <class>
-struct handle_input_path_error;
-
-template <>
-struct handle_input_path_error <tag::constraints::path::must_exist>
-{
-    handle_input_path_error (filesystem::path const& path)
-    {
-        throw runtime_error ("given path does not exist on system");
-    }
-};
-
-
-template <class>
-struct OutputPathErrorHandler;
-
-template <>
-struct OutputPathErrorHandler <tag::constraints::path::must_not_exist>
-{
-    OutputPathErrorHandler (filesystem::path const& path)
-    {
-        throw runtime_error ("given path already exist on system");
-    }
-};
-
-
-template <class>
-struct handle_input_file_type_error
-{
-    handle_input_file_type_error (filesystem::path const& path)
-    {
-        throw runtime_error ("given path already exist on system");
-    }
-};
-
-template <class>
-struct OutputFileTypeErrorHandler
-{
-    OutputFileTypeErrorHandler (filesystem::path const& path)
-    {
-        throw runtime_error ("given path already exist on system");
-    }
-};
-
-
-
-
-
-
-
-
-template <class...>
-struct handle_input_path;
-
-template <class... Mixins>
-struct handle_input_path <tag::file_type::file, Mixins...> : Mixins...
-{
-    string text;
-    
-    handle_input_path (filesystem::path const& path) : text (readFileIntoString(path)), Mixins {path}...
-    {
-        cout << "FILE" << endl;
-        cout << text << endl;
-    }
-};
-
-
-
-
-
-template <class... Mixins>
-struct handle_input_path <tag::file_type::folder, Mixins...> : Mixins...
-{
-    
-    
-    handle_input_path (filesystem::path const& path) : Mixins {path}...
-    {
-        cout << "FOLDER" << endl;
-    }
-};
 
 
 

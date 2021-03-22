@@ -1,5 +1,5 @@
-#ifndef HANDLES_HPP
-#define HANDLES_HPP
+#ifndef TAGS_HPP
+#define TAGS_HPP
 
 namespace tag
 {

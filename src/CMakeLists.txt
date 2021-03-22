@@ -6,7 +6,7 @@ file(GLOB SOURCE_LIST ${PROJECT_SOURCE_DIR}/src/*.cpp)
 set (self ${PROJECT_NAME})
 
 add_library (${self} SHARED
-	${SOURCE_LIST}  ${HEADER_LIST} ${CMAKE_SOURCE_DIR}/src/handles.hpp ${CMAKE_SOURCE_DIR}/src/tags.hpp
+	${SOURCE_LIST}  ${HEADER_LIST} ${CMAKE_SOURCE_DIR}/src/tags.hpp
 )
 set_target_properties(${self} PROPERTIES PUBLIC_HEADER ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME}/${PROJECT_NAME}.hpp)
 
