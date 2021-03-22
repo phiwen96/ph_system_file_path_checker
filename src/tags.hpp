@@ -1,9 +1,9 @@
 #ifndef HANDLES_HPP
 #define HANDLES_HPP
 
-struct tag
+namespace tag
 {
-    struct file_type
+namespace file_type
     {
         struct file
         {
@@ -16,15 +16,15 @@ struct tag
         };
     };
     
-    struct constraints
+namespace constraints
     {
-        struct path
+namespace path
         {
             struct must_exist;
             struct must_not_exist;
         };
         
-        struct file_type
+namespace file_type
         {
             struct must_be_file;
             struct must_be_folder;
