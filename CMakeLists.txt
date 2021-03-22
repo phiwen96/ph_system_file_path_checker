@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.19.4)
 
 project (
-	cython
+	ph_system_file_path_checker
 	VERSION 1.0
 	DESCRIPTION "Very nice project"
 	LANGUAGES CXX
