@@ -9,8 +9,14 @@ project (
 
 
 add_subdirectory (cmake/phake)
-add_subdirectory (dependencies/const_str)
-add_subdirectory (dependencies/ph_type_list)
+if (NOT TARGET const_str)
+	add_subdirectory (dependencies/const_str)
+endif ()
+if (NOT TARGET const_str)
+	add_subdirectory (dependencies/ph_type_list)
+endif ()
+
+
 
 if (CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 	
