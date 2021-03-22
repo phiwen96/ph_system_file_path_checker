@@ -18,39 +18,6 @@ string readFileIntoString(filesystem::path const& path) {
 #define IS_DIRECTORY filesystem::is_directory (path)
 #define IS_FILE filesystem::is_regular_file (path)
 
-
-
-
-struct filetype {
-    struct file
-    {
-        
-    };
-    struct folder
-    {
-        
-    };
-};
-
-//struct tag::error::file_type
-//{
-//    struct must_be_file
-//    {
-//
-//    };
-//    struct must_be_folder
-//    {
-//
-//    };
-//    struct can_be_any
-//    {
-//
-//    };
-//};
-
-
-
-
 struct tag
 {
     struct file_type
@@ -82,6 +49,99 @@ struct tag
         };
     };
 };
+
+namespace ph_system_file_path_checker_impl
+{
+template <class>
+struct handle_input_path_error;
+
+template <>
+struct handle_input_path_error <tag::error::path::must_exist>
+{
+    static void error (filesystem::path const& path)
+    {
+        throw runtime_error ("given path does not exist on system");
+    }
+};
+
+
+template <class>
+struct OutputPathErrorHandler;
+
+template <>
+struct OutputPathErrorHandler <tag::error::path::must_not_exist>
+{
+    static void error (filesystem::path const& path)
+    {
+        throw runtime_error ("given path already exist on system");
+    }
+};
+
+
+template <class>
+struct handle_input_file_type_error
+{
+    static void error (filesystem::path const& path)
+    {
+        throw runtime_error ("given path already exist on system");
+    }
+};
+
+template <class>
+struct OutputFileTypeErrorHandler
+{
+    static void error (filesystem::path const& path)
+    {
+        throw runtime_error ("given path already exist on system");
+    }
+};
+
+
+
+
+
+
+
+
+template <class...>
+struct handle_input_path;
+
+template <class... Mixins>
+struct handle_input_path <tag::file_type::file, Mixins...> : Mixins...
+{
+    string text;
+    
+    handle_input_path (filesystem::path const& path) : text (readFileIntoString(path)), Mixins {path}...
+    {
+        cout << "FILE" << endl;
+        cout << text << endl;
+    }
+};
+
+
+
+
+
+template <class... Mixins>
+struct handle_input_path <tag::file_type::folder, Mixins...> : Mixins...
+{
+    
+    
+    handle_input_path (filesystem::path const& path) : Mixins {path}...
+    {
+        cout << "FOLDER" << endl;
+    }
+};
+}
+
+
+
+
+
+
+
+
+
 
 
 template <template <class...> class SuccessHandler, class tag_error_path, template <class...> class PathErrorHandler, class tag_error_file_type, template <class...> class FileTypeErrorHandler>
@@ -170,8 +230,9 @@ struct Path_Info
 
 
 
+using namespace ph_system_file_path_checker_impl;
 
-template <template <class...> class SuccessHandler, class tag_error_path, template <class...> class PathErrorHandler, class tag_error_file_type, template <class...> class FileTypeErrorHandler>
+template <template <class...> class SuccessHandler, class tag_error_path, class tag_error_file_type, template <class...> class PathErrorHandler, template <class...> class FileTypeErrorHandler>
 struct system_file_path_checker
 {
     
