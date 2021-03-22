@@ -1,4 +1,6 @@
+#include "../src/tags.hpp"
 #pragma once
+//#include "../src/handles.hpp"
 #include <ph_type_list/type_list.hpp>
 using namespace std;
 
@@ -18,47 +20,16 @@ string readFileIntoString(filesystem::path const& path) {
 #define IS_DIRECTORY filesystem::is_directory (path)
 #define IS_FILE filesystem::is_regular_file (path)
 
-struct tag
-{
-    struct file_type
-    {
-        struct file
-        {
-            
-        };
-        
-        struct folder
-        {
-            
-        };
-    };
-    
-    struct error
-    {
-        struct path
-        {
-            struct must_exist;
-            struct must_not_exist;
-        };
-        
-        struct file_type
-        {
-            struct must_be_file;
-            struct must_be_folder;
-            struct can_be_any;
-        };
-    };
-};
 
-namespace ph_system_file_path_checker_impl
-{
+
+
 template <class>
 struct handle_input_path_error;
 
 template <>
-struct handle_input_path_error <tag::error::path::must_exist>
+struct handle_input_path_error <tag::constraints::path::must_exist>
 {
-    static void error (filesystem::path const& path)
+    handle_input_path_error (filesystem::path const& path)
     {
         throw runtime_error ("given path does not exist on system");
     }
@@ -69,9 +40,9 @@ template <class>
 struct OutputPathErrorHandler;
 
 template <>
-struct OutputPathErrorHandler <tag::error::path::must_not_exist>
+struct OutputPathErrorHandler <tag::constraints::path::must_not_exist>
 {
-    static void error (filesystem::path const& path)
+    OutputPathErrorHandler (filesystem::path const& path)
     {
         throw runtime_error ("given path already exist on system");
     }
@@ -81,7 +52,7 @@ struct OutputPathErrorHandler <tag::error::path::must_not_exist>
 template <class>
 struct handle_input_file_type_error
 {
-    static void error (filesystem::path const& path)
+    handle_input_file_type_error (filesystem::path const& path)
     {
         throw runtime_error ("given path already exist on system");
     }
@@ -90,7 +61,7 @@ struct handle_input_file_type_error
 template <class>
 struct OutputFileTypeErrorHandler
 {
-    static void error (filesystem::path const& path)
+    OutputFileTypeErrorHandler (filesystem::path const& path)
     {
         throw runtime_error ("given path already exist on system");
     }
@@ -132,7 +103,7 @@ struct handle_input_path <tag::file_type::folder, Mixins...> : Mixins...
         cout << "FOLDER" << endl;
     }
 };
-}
+
 
 
 
@@ -146,21 +117,21 @@ struct handle_input_path <tag::file_type::folder, Mixins...> : Mixins...
 
 template <template <class...> class SuccessHandler, class tag_error_path, template <class...> class PathErrorHandler, class tag_error_file_type, template <class...> class FileTypeErrorHandler>
 requires requires (filesystem::path const& path) {
-    is_same_v <tag_error_path, tag::error::path::must_exist> or is_same_v <tag_error_path, tag::error::path::must_not_exist>;
-    is_same_v <tag_error_file_type, tag::error::file_type::must_be_file> or is_same_v <tag_error_file_type, tag::error::file_type::must_be_folder> or is_same_v <tag_error_file_type, tag::error::file_type::can_be_any>;
+    is_same_v <tag_error_path, tag::constraints::path::must_exist> or is_same_v <tag_error_path, tag::constraints::path::must_not_exist>;
+    is_same_v <tag_error_file_type, tag::constraints::file_type::must_be_file> or is_same_v <tag_error_file_type, tag::constraints::file_type::must_be_folder> or is_same_v <tag_error_file_type, tag::constraints::file_type::can_be_any>;
     
-    PathErrorHandler <tag_error_path>::error (path);
+    PathErrorHandler <tag_error_path> {path};
     SuccessHandler <tag::file_type::file> {path};
     SuccessHandler <tag::file_type::folder> {path};
 }
 struct Path_Info
 {
-    inline static constexpr bool path_must_exist = is_same_v <tag_error_path, tag::error::path::must_exist>;
-    inline static constexpr bool path_must_not_exist = is_same_v <tag_error_path, tag::error::path::must_not_exist>;
+    inline static constexpr bool path_must_exist = is_same_v <tag_error_path, tag::constraints::path::must_exist>;
+    inline static constexpr bool path_must_not_exist = is_same_v <tag_error_path, tag::constraints::path::must_not_exist>;
     
-    inline static constexpr bool must_be_file = is_same_v <tag_error_file_type, tag::error::file_type::must_be_file>;
-    inline static constexpr bool must_be_folder = is_same_v <tag_error_file_type, tag::error::file_type::must_be_folder>;
-    inline static constexpr bool can_be_any = is_same_v <tag_error_file_type, tag::error::file_type::can_be_any>;
+    inline static constexpr bool must_be_file = is_same_v <tag_error_file_type, tag::constraints::file_type::must_be_file>;
+    inline static constexpr bool must_be_folder = is_same_v <tag_error_file_type, tag::constraints::file_type::must_be_folder>;
+    inline static constexpr bool can_be_any = is_same_v <tag_error_file_type, tag::constraints::file_type::can_be_any>;
     
 //    using file_type = conditional_t <must_be_file, tag::file_type::file, conditional_t <must_be_folder, tag::file_type::folder, <#class _Then#>>>
     
@@ -177,14 +148,14 @@ struct Path_Info
             if (not PATH_EXISTS)
             {
 //                type_list <T...>::
-                path_error_handler::error(path);
+                path_error_handler {path};
             }
             
         } else if constexpr (path_must_not_exist)
         {
             if (PATH_EXISTS)
             {
-                path_error_handler::error (path);
+                path_error_handler {path};
             }
         }
        
@@ -192,7 +163,7 @@ struct Path_Info
         {
             if (not IS_FILE)
             {
-                file_type_error_handler::error (path);
+                file_type_error_handler {path};
             }
             
             SuccessHandler<tag::file_type::file, T...> {path};
@@ -201,7 +172,7 @@ struct Path_Info
         {
             if (not IS_DIRECTORY)
             {
-                file_type_error_handler::error (path);
+                file_type_error_handler {path};
             }
             
             SuccessHandler<tag::file_type::folder, T...> {path};
@@ -218,7 +189,7 @@ struct Path_Info
                 
             } else
             {
-                file_type_error_handler::error (path);
+                file_type_error_handler {path};
             }
         }
         
@@ -230,7 +201,7 @@ struct Path_Info
 
 
 
-using namespace ph_system_file_path_checker_impl;
+//using namespace ph_system_file_path_checker_impl;
 
 template <template <class...> class SuccessHandler, class tag_error_path, class tag_error_file_type, template <class...> class PathErrorHandler, template <class...> class FileTypeErrorHandler>
 struct system_file_path_checker
